@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from uuid import uuid4
 
-from ecdsa import SigningKey, VerifyingKey, SECP256k1, BadSignatureError
+from ecdsa import SigningKey
 
 
 import requests
@@ -54,42 +54,17 @@ class Blockchain:
             pass
 
     def register_node(self, address: str) -> None:
-        """
-        注册添加一个节点
-        :param address: Address of node. Eg. 'http://192.168.0.5:5000'
-        """
-
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
-        # f = open(filepath + self.node_file, 'w')
-        # f.write(json.dumps({
-        #     'nodes': list(self.nodes)
-        # }))
-        # f.close()
 
     def valid_chain(self, chain: List[Dict[str, Any]]) -> bool:
-        """
-        验证区块链
-        :param chain: A blockchain
-        :return: True if valid, False if not
-        """
-
         last_block = chain[0]
         current_index = 1
 
         while current_index < len(chain):
             block = chain[current_index]
-            # print(f'{last_block}')
-            # print(f'{block}')
-            # print("\n-----------\n")
-            # 验证区块的hash值
             if block['previous_hash'] != self.hash(last_block):
                 return False
-
-            # 验证工作量证明是否正确
-            # 交流后注释
-            # if not self.valid_proof(last_block['proof'], block['proof']):
-            #     return False
 
             last_block = block
             current_index += 1
@@ -105,12 +80,6 @@ class Blockchain:
         return True
 
     def resolve_conflicts(self) -> bool:
-        """
-        共识算法解决冲突
-        使用网络中最长的链.
-        :return:  如果链被取代返回 True, 否则为False
-        """
-
         neighbours = self.nodes
         new_chain = None
 
@@ -139,12 +108,6 @@ class Blockchain:
         return False
 
     def new_block(self, proof: int, previous_hash: str, miner) -> Dict[str, Any]:
-        """
-        生成新块
-        :param proof: 计算得到的随机数
-        :param previous_hash: 前一个区块的hash值
-        :return: 新区块
-        """
         index = len(self.chain) + 1
         timestamp = time()
         records = self.current_records
@@ -188,14 +151,6 @@ class Blockchain:
         return block
 
     def new_record(self, id: str, maker: str, maker_sign: str, logistics: str, logistics_sign: str, receiver: str, receiver_sign: str, previous_hash, stamp,path) -> int:
-        """
-        生成新交易信息，信息将加入到下一个待挖的区块中
-        :param sender: 发送者ip地址
-        :param recipient: 接收者ip地址
-        :param amount: 交易数量
-        :return: 待挖区块的index值
-        """
-
         route = []
         # if request from maker
         if (maker != ''):
@@ -304,29 +259,6 @@ class Blockchain:
         }))
         f.close()
 
-
-"""
-=========================================================================
-    'id' :
-    'maker' :
-    'maker_sign' :
-    'logistics' :
-    'logistics_sign' :
-    'receiver' :
-    'receiver_sign' :
-    'previous_hash' :
-    'timestamp' :
-
-block = 
-    'index': len(self.chain) + 1,
-    'timestamp': time(),
-    'records': self.current_records,
-    'proof': proof,
-    'previous_hash': previous_hash or self.hash(self.chain[-1]),
-    'miner': miner,
-"""
-
-
 # 实例化节点
 app = Flask(__name__)
 
@@ -416,11 +348,6 @@ def mine():
 
 @app.route('/broadcast_block', methods=['GET', 'POST'])
 def broadcast_block():
-    """
-    添加新数据接口
-    :return:
-    """
-
     #check if current chain is correct
     consensus()
     values = request.get_json()
@@ -448,10 +375,6 @@ def broadcast_block():
 
 @app.route('/new_maker', methods=['GET', 'POST'])
 def new_maker():
-    """
-    添加新数据接口
-    :return:
-    """
     values = request.get_json()
 
     # 检查POST数据
