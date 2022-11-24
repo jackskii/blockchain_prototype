@@ -248,7 +248,7 @@ class Blockchain:
 
         # 新加，其余节点添加区块时，要把本地已经被打包进区块的record删掉
         for record in block['records']:
-            if record in self.current_records:
+            if record['id'] == self.current_records['id']:
                 self.current_records.remove(record)
 
         # 修改data文件
